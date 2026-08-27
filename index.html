@@ -43,7 +43,7 @@
 
     /* Panel Lateral de Controles */
     .sidebar {
-      width: 500px;
+      width: 510px;
       background: var(--bg-panel);
       border-right: 1px solid #e2e8f0;
       padding: 22px;
@@ -146,10 +146,10 @@
       background: #0284c7;
       color: white;
       border: none;
-      padding: 8px 12px;
+      padding: 9px 12px;
       border-radius: 6px;
       font-weight: 700;
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -160,23 +160,51 @@
     }
     .btn-add-line:hover { background: #0369a1; }
 
-    /* Fila dinámica de credenciales */
+    /* Fila Dinámica con Controles de Orden (Subir/Bajar) */
     .dynamic-line-row {
       display: flex;
-      gap: 6px;
+      gap: 4px;
       align-items: center;
+      background: #f8fafc;
+      padding: 4px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
     }
     .dynamic-line-row input {
       flex: 1;
+      border: 1px solid #cbd5e1;
+      padding: 6px 10px;
+    }
+    .btn-reorder {
+      background: #64748b;
+      color: white;
+      border: none;
+      width: 28px;
+      height: 32px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .btn-reorder:hover:not(:disabled) { background: #334155; }
+    .btn-reorder:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
     }
     .btn-delete-row {
       background: #ef4444;
       color: white;
       border: none;
-      width: 34px;
-      height: 34px;
-      border-radius: 6px;
+      width: 28px;
+      height: 32px;
+      border-radius: 4px;
       font-weight: 700;
+      font-size: 0.8rem;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -616,10 +644,10 @@
       <input type="text" id="inName" value="Mtro. Rafael Garza Hinojosa" oninput="renderPoster()">
     </div>
 
-    <!-- Contenedor Dinámico de Renglones de Credenciales -->
+    <!-- Contenedor Dinámico con Botones de Reordenar (Subir/Bajar) y Eliminar -->
     <div class="form-group">
-      <label>Credenciales, Cédulas y Especialidades</label>
-      <div id="dynamicLinesContainer" style="display:flex; flex-direction:column; gap:8px;"></div>
+      <label>Credenciales (Reordenar con ▲ y ▼)</label>
+      <div id="dynamicLinesContainer" style="display:flex; flex-direction:column; gap:6px;"></div>
       <button type="button" class="btn-add-line" onclick="addCredentialLine()">➕ Agregar Renglón</button>
     </div>
 
@@ -706,9 +734,7 @@
 
         <div class="poster-bio-box">
           <div class="bio-name" id="outName">Mtro. Rafael Garza Hinojosa</div>
-          <div class="bio-credentials" id="outCredentialsContainer">
-            <!-- Renglones generados dinámicamente -->
-          </div>
+          <div class="bio-credentials" id="outCredentialsContainer"></div>
         </div>
       </div>
 
@@ -817,7 +843,7 @@
       applyStyleObj(STYLES_DB[r]);
     }
 
-    // MANEJO DE RENGLONES DINÁMICOS DE TRAYECTORIA / CREDENCIALES
+    // GESTIÓN DE RENGLONES CON SUBIR (▲), BAJAR (▼) Y ELIMINAR (✕)
     let credentialLines = [
       "Cédula Profesional: [Número de Registro]",
       "Experto en Productividad Académica",
@@ -834,6 +860,8 @@
         const row = document.createElement('div');
         row.className = 'dynamic-line-row';
         row.innerHTML = `
+          <button type="button" class="btn-reorder" onclick="moveCredentialLine(${index}, -1)" ${index === 0 ? 'disabled' : ''} title="Subir renglón">▲</button>
+          <button type="button" class="btn-reorder" onclick="moveCredentialLine(${index}, 1)" ${index === credentialLines.length - 1 ? 'disabled' : ''} title="Bajar renglón">▼</button>
           <input type="text" value="${text.replace(/"/g, '&quot;')}" oninput="updateCredentialLine(${index}, this.value)">
           <button type="button" class="btn-delete-row" onclick="removeCredentialLine(${index})" title="Eliminar renglón">✕</button>
         `;
@@ -841,6 +869,17 @@
       });
 
       renderCredentialsPreview();
+    }
+
+    function moveCredentialLine(index, direction) {
+      const newIndex = index + direction;
+      if (newIndex < 0 || newIndex >= credentialLines.length) return;
+      
+      const temp = credentialLines[index];
+      credentialLines[index] = credentialLines[newIndex];
+      credentialLines[newIndex] = temp;
+      
+      renderCredentialInputs();
     }
 
     function addCredentialLine() {
@@ -870,11 +909,10 @@
       });
     }
 
-    // RENDERIZADO GENERAL Y CONTROL DE MAYÚSCULAS/MINÚSCULAS
+    // RENDERIZADO GENERAL Y TEXT-TRANSFORM
     function renderPoster() {
       document.getElementById('outBrand').innerText = document.getElementById('inBrand').value;
       
-      // Control de texto del Eslogan
       const sloganVal = document.getElementById('inSlogan').value;
       const sloganCase = document.getElementById('inSloganCase').value;
       const outSlogan = document.getElementById('outSlogan');
@@ -883,7 +921,6 @@
 
       document.getElementById('outPlatform').innerText = document.getElementById('inPlatform').value;
       
-      // Control de texto del Título
       const titleVal = document.getElementById('inTitle').value;
       const titleCase = document.getElementById('inTitleCase').value;
       const outTitle = document.getElementById('outTitle');
@@ -986,12 +1023,12 @@
         logoShape: document.getElementById('logoShape').value,
         logoSize: document.getElementById('logoSize').value
       };
-      localStorage.setItem('capacitiumx_poster_v4', JSON.stringify(data));
+      localStorage.setItem('capacitiumx_poster_v5', JSON.stringify(data));
       alert('¡Póster guardado en memoria local!');
     }
 
     function loadPosterData() {
-      const saved = localStorage.getItem('capacitiumx_poster_v4');
+      const saved = localStorage.getItem('capacitiumx_poster_v5');
       if (!saved) return alert('No hay datos guardados.');
       const data = JSON.parse(saved);
       
@@ -1030,12 +1067,12 @@
     }
 
     function exportJSON() {
-      const data = localStorage.getItem('capacitiumx_poster_v4');
+      const data = localStorage.getItem('capacitiumx_poster_v5');
       if (!data) return savePosterData();
       const blob = new Blob([data], { type: 'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = 'poster_config_v4.json';
+      a.download = 'poster_config_v5.json';
       a.click();
     }
 
