@@ -258,7 +258,7 @@
 
     /* 1. Membrete / Encabezado */
     .poster-header {
-      padding: 20px 36px 12px 36px;
+      padding: 16px 36px 8px 36px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -312,7 +312,7 @@
     .poster-brand-name {
       font-family: 'Montserrat', sans-serif;
       font-weight: 900;
-      font-size: 2.2rem;
+      font-size: 2.1rem;
       letter-spacing: 2px;
       color: var(--poster-text-main);
       text-transform: uppercase;
@@ -324,18 +324,18 @@
       color: var(--poster-accent);
     }
 
-    /* 2. Sección Principal / Hero & Fotografía */
+    /* 2. Sección Principal / Hero & Fotografía Compactada */
     .poster-hero {
       position: relative;
       background: var(--poster-hero-bg);
       color: var(--poster-hero-text);
-      padding: 28px 36px 36px 36px;
-      min-height: 240px;
+      padding: 22px 36px 20px 36px;
+      min-height: 200px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       z-index: 2;
-      clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+      clip-path: polygon(0 0, 100% 0, 100% 92%, 0 100%);
     }
     .poster-title-area {
       max-width: 58%;
@@ -343,7 +343,7 @@
     .poster-title {
       font-family: var(--poster-font-title);
       font-weight: 900;
-      font-size: 2.9rem;
+      font-size: 2.8rem;
       line-height: 1.05;
       letter-spacing: -0.5px;
       text-shadow: 0 4px 10px rgba(0,0,0,0.25);
@@ -358,7 +358,7 @@
       border-radius: 30px;
       font-weight: 800;
       font-size: 0.85rem;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     }
 
@@ -366,14 +366,14 @@
     .poster-photo-frame {
       position: absolute;
       right: 40px;
-      top: 10px;
-      width: 250px;
-      height: 250px;
+      top: 6px;
+      width: 220px;
+      height: 220px;
       border-radius: 50%;
       border: var(--poster-photo-border);
       overflow: hidden;
       background: #cbd5e1;
-      box-shadow: 0 14px 28px rgba(0,0,0,0.3);
+      box-shadow: 0 12px 26px rgba(0,0,0,0.3);
       z-index: 3;
     }
     .poster-photo-img {
@@ -383,15 +383,16 @@
       transform-origin: center center;
     }
 
-    /* 3. Sección Central Rebalanceada (Tarjeta Compacta a la Izquierda) */
+    /* 3. Sección Central Ajustada Directamente Bajo la Foto */
     .poster-middle {
       display: grid;
       grid-template-columns: auto 1fr;
-      align-items: center;
-      padding: 14px 36px 8px 36px;
-      gap: 28px;
+      align-items: flex-start;
+      padding: 8px 36px 0px 36px;
+      gap: 24px;
       z-index: 2;
       flex: 1;
+      margin-top: -8px; /* Reduce la separación con la foto */
     }
 
     /* Tarjeta Compacta de Calendario / Sesión */
@@ -406,6 +407,7 @@
       border-left: 4px solid var(--poster-accent);
       max-width: 320px;
       width: fit-content;
+      margin-top: 10px;
     }
     .session-title {
       font-size: 0.85rem;
@@ -434,21 +436,21 @@
       line-height: 1.15;
     }
 
-    /* Bio / Instructor */
+    /* Bio / Instructor Alineada Inmediatamente Tras el Borde de la Foto */
     .poster-bio-box {
       text-align: right;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      padding-left: 10px;
+      justify-content: flex-start;
+      padding-top: 4px;
     }
     .bio-name {
       font-family: var(--poster-font-title);
-      font-size: 1.6rem;
+      font-size: 1.65rem;
       font-weight: 900;
       color: var(--poster-text-main);
       line-height: 1.15;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
     .bio-credentials {
       display: flex;
@@ -469,8 +471,8 @@
     /* 4. Pie de Página / Contacto */
     .poster-footer {
       background: var(--poster-card-bg);
-      padding: 18px 36px;
-      margin: 8px 36px 22px 36px;
+      padding: 16px 36px;
+      margin: 6px 36px 20px 36px;
       border-radius: 16px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.07);
       display: flex;
@@ -501,7 +503,7 @@
 
     .footer-watermark {
       position: absolute;
-      bottom: 5px;
+      bottom: 4px;
       right: 36px;
       font-size: 0.72rem;
       font-weight: 800;
@@ -648,6 +650,7 @@
       <input type="text" id="inName" value="Mtro. Rafael Garza Hinojosa" oninput="renderPoster()">
     </div>
 
+    <!-- Contenedor Dinámico con Botones de Reordenar (Subir/Bajar) y Eliminar -->
     <div class="form-group">
       <label>Credenciales (Reordenar con ▲ y ▼)</label>
       <div id="dynamicLinesContainer" style="display:flex; flex-direction:column; gap:6px;"></div>
@@ -1028,12 +1031,12 @@
         logoShape: document.getElementById('logoShape').value,
         logoSize: document.getElementById('logoSize').value
       };
-      localStorage.setItem('capacitiumx_poster_v6', JSON.stringify(data));
+      localStorage.setItem('capacitiumx_poster_v7', JSON.stringify(data));
       alert('¡Póster guardado en memoria local!');
     }
 
     function loadPosterData() {
-      const saved = localStorage.getItem('capacitiumx_poster_v6');
+      const saved = localStorage.getItem('capacitiumx_poster_v7');
       if (!saved) return alert('No hay datos guardados.');
       const data = JSON.parse(saved);
       
@@ -1072,12 +1075,12 @@
     }
 
     function exportJSON() {
-      const data = localStorage.getItem('capacitiumx_poster_v6');
+      const data = localStorage.getItem('capacitiumx_poster_v7');
       if (!data) return savePosterData();
       const blob = new Blob([data], { type: 'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = 'poster_config_v6.json';
+      a.download = 'poster_config_v7.json';
       a.click();
     }
 
