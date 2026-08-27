@@ -160,7 +160,7 @@
     }
     .btn-add-line:hover { background: #0369a1; }
 
-    /* Fila Dinámica con Controles de Orden (Subir/Bajar) */
+    /* Fila Dinámica de Credenciales */
     .dynamic-line-row {
       display: flex;
       gap: 4px;
@@ -383,54 +383,58 @@
       transform-origin: center center;
     }
 
-    /* 3. Sección Central / Bio y Detalles */
+    /* 3. Sección Central Rebalanceada (Tarjeta Compacta a la Izquierda) */
     .poster-middle {
       display: grid;
-      grid-template-columns: 1fr 1.15fr;
-      padding: 16px 36px 8px 36px;
-      gap: 18px;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      padding: 14px 36px 8px 36px;
+      gap: 28px;
       z-index: 2;
       flex: 1;
     }
 
-    /* Tarjeta de Sesión / Fecha */
+    /* Tarjeta Compacta de Calendario / Sesión */
     .poster-session-box {
       background: var(--poster-card-bg);
-      border-radius: 16px;
-      padding: 18px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+      border-radius: 12px;
+      padding: 12px 16px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      border-left: 6px solid var(--poster-accent);
+      gap: 6px;
+      border-left: 4px solid var(--poster-accent);
+      max-width: 320px;
+      width: fit-content;
     }
     .session-title {
-      font-size: 1.1rem;
+      font-size: 0.85rem;
       font-weight: 800;
       color: var(--poster-text-main);
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
     .session-datetime {
-      font-size: 1.2rem;
+      font-size: 0.95rem;
       font-weight: 800;
       color: var(--poster-accent);
       line-height: 1.25;
-      margin: 6px 0;
+      margin: 2px 0;
     }
     .session-badge {
       background: var(--poster-badge-bg);
       color: var(--poster-badge-text);
       font-weight: 800;
-      font-size: 0.85rem;
-      padding: 8px 12px;
-      border-radius: 8px;
+      font-size: 0.75rem;
+      padding: 5px 10px;
+      border-radius: 6px;
       display: inline-block;
       text-align: center;
+      line-height: 1.15;
     }
 
-    /* Bio / Instructor con Renglones Dinámicos */
+    /* Bio / Instructor */
     .poster-bio-box {
       text-align: right;
       display: flex;
@@ -644,7 +648,6 @@
       <input type="text" id="inName" value="Mtro. Rafael Garza Hinojosa" oninput="renderPoster()">
     </div>
 
-    <!-- Contenedor Dinámico con Botones de Reordenar (Subir/Bajar) y Eliminar -->
     <div class="form-group">
       <label>Credenciales (Reordenar con ▲ y ▼)</label>
       <div id="dynamicLinesContainer" style="display:flex; flex-direction:column; gap:6px;"></div>
@@ -724,14 +727,16 @@
         </div>
       </div>
 
-      <!-- 3. Sección Central: Sesión + Credenciales Dinámicas -->
+      <!-- 3. Sección Central: Sesión Compacta + Credenciales -->
       <div class="poster-middle">
+        <!-- Recuadro Compacto -->
         <div class="poster-session-box">
           <div class="session-title" id="outSessionHeader">📅 Próxima Sesión:</div>
           <div class="session-datetime" id="outDateTime">Este martes 1 de septiembre<br>7:00 a 8:00 PM (Hora de México)</div>
           <div class="session-badge" id="outBadge">✅ Evento 100% Gratuito · ¡Inscríbete y participa!</div>
         </div>
 
+        <!-- Columna de Credenciales -->
         <div class="poster-bio-box">
           <div class="bio-name" id="outName">Mtro. Rafael Garza Hinojosa</div>
           <div class="bio-credentials" id="outCredentialsContainer"></div>
@@ -1023,12 +1028,12 @@
         logoShape: document.getElementById('logoShape').value,
         logoSize: document.getElementById('logoSize').value
       };
-      localStorage.setItem('capacitiumx_poster_v5', JSON.stringify(data));
+      localStorage.setItem('capacitiumx_poster_v6', JSON.stringify(data));
       alert('¡Póster guardado en memoria local!');
     }
 
     function loadPosterData() {
-      const saved = localStorage.getItem('capacitiumx_poster_v5');
+      const saved = localStorage.getItem('capacitiumx_poster_v6');
       if (!saved) return alert('No hay datos guardados.');
       const data = JSON.parse(saved);
       
@@ -1067,12 +1072,12 @@
     }
 
     function exportJSON() {
-      const data = localStorage.getItem('capacitiumx_poster_v5');
+      const data = localStorage.getItem('capacitiumx_poster_v6');
       if (!data) return savePosterData();
       const blob = new Blob([data], { type: 'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = 'poster_config_v5.json';
+      a.download = 'poster_config_v6.json';
       a.click();
     }
 
