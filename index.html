@@ -43,7 +43,7 @@
 
     /* Panel Lateral de Controles */
     .sidebar {
-      width: 490px;
+      width: 500px;
       background: var(--bg-panel);
       border-right: 1px solid #e2e8f0;
       padding: 22px;
@@ -142,6 +142,50 @@
     .btn-action.load { background: #4f46e5; }
     .btn-action.random { background: #d97706; }
 
+    .btn-add-line {
+      background: #0284c7;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.2s;
+      margin-top: 4px;
+    }
+    .btn-add-line:hover { background: #0369a1; }
+
+    /* Fila dinámica de credenciales */
+    .dynamic-line-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .dynamic-line-row input {
+      flex: 1;
+    }
+    .btn-delete-row {
+      background: #ef4444;
+      color: white;
+      border: none;
+      width: 34px;
+      height: 34px;
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .btn-delete-row:hover { background: #dc2626; }
+
     .btn-download {
       background: #2563eb;
       color: white;
@@ -197,11 +241,46 @@
       align-items: center;
       gap: 14px;
     }
+
+    .poster-logo-frame {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: #ffffff;
+      transition: all 0.2s ease;
+    }
+    
+    .logo-shape-circle {
+      border-radius: 50%;
+      border: 3px solid var(--poster-accent);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+    
+    .logo-shape-rounded {
+      border-radius: 12px;
+      border: 2px solid var(--poster-accent);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .logo-shape-square {
+      border-radius: 0px;
+      border: 2px solid var(--poster-accent);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .logo-shape-flat {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+    }
+
     .poster-logo-img {
-      max-height: 52px;
-      max-width: 160px;
+      width: 100%;
+      height: 100%;
       object-fit: contain;
     }
+
     .poster-brand-name {
       font-family: 'Montserrat', sans-serif;
       font-weight: 900;
@@ -214,7 +293,6 @@
       font-size: 0.85rem;
       font-weight: 700;
       letter-spacing: 1px;
-      text-transform: uppercase;
       color: var(--poster-accent);
     }
 
@@ -239,7 +317,6 @@
       font-weight: 900;
       font-size: 2.9rem;
       line-height: 1.05;
-      text-transform: capitalize;
       letter-spacing: -0.5px;
       text-shadow: 0 4px 10px rgba(0,0,0,0.25);
     }
@@ -325,7 +402,7 @@
       text-align: center;
     }
 
-    /* Bio / Instructor con Múltiples Líneas */
+    /* Bio / Instructor con Renglones Dinámicos */
     .poster-bio-box {
       text-align: right;
       display: flex;
@@ -356,12 +433,8 @@
     .bio-credentials span:empty {
       display: none;
     }
-    .bio-cedula {
-      font-weight: 800;
-      color: var(--poster-accent);
-    }
 
-    /* 4. Pie de Página / Registro y Membrete */
+    /* 4. Pie de Página / Contacto */
     .poster-footer {
       background: var(--poster-card-bg);
       padding: 18px 36px;
@@ -435,11 +508,30 @@
       <select id="themeSelector" onchange="applySelectedStyle()"></select>
     </div>
 
-    <div class="section-title">Membrete Superior & Marca</div>
+    <div class="section-title">Membrete Superior & Logotipo</div>
     
     <div class="form-group">
-      <label>Subir Logo de la Empresa</label>
+      <label>Subir Logo</label>
       <input type="file" accept="image/*" onchange="loadLogo(event)">
+    </div>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Forma del Logo</label>
+        <select id="logoShape" onchange="updateLogoAppearance()">
+          <option value="logo-shape-circle">⚪ Círculo</option>
+          <option value="logo-shape-rounded">🔲 Cuadrado Redondeado</option>
+          <option value="logo-shape-square">⬛ Cuadrado Plano</option>
+          <option value="logo-shape-flat">✨ Plano Transparente</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tamaño Logo</label>
+        <div class="range-control">
+          <input type="range" id="logoSize" min="40" max="90" value="60" oninput="updateLogoAppearance()">
+          <span id="lblLogoSize">60px</span>
+        </div>
+      </div>
     </div>
 
     <div class="grid-2">
@@ -449,8 +541,18 @@
       </div>
       <div class="form-group">
         <label>Eslogan / Submembrete</label>
-        <input type="text" id="inSlogan" value="Centro de Capacitación y Asesoría" oninput="renderPoster()">
+        <input type="text" id="inSlogan" value="Capacitación y Asesoría Académica" oninput="renderPoster()">
       </div>
+    </div>
+
+    <div class="form-group">
+      <label>Formato de Texto del Eslogan</label>
+      <select id="inSloganCase" onchange="renderPoster()">
+        <option value="none">Texto Original (tal como lo escribes)</option>
+        <option value="lowercase">minúsculas (todo en minúscula)</option>
+        <option value="capitalize">Tipo Título (Primera Letra Mayúscula)</option>
+        <option value="uppercase">MAYÚSCULAS (TODO EN MAYÚSCULAS)</option>
+      </select>
     </div>
 
     <div class="section-title">Foto de Perfil</div>
@@ -470,14 +572,14 @@
 
     <div class="grid-2">
       <div class="form-group">
-        <label>Posición Horizontal</label>
+        <label>Posición X</label>
         <div class="range-control">
           <input type="range" id="photoPosX" min="-100" max="100" value="0" oninput="updatePhotoTransform()">
           <span id="lblPhotoX">0px</span>
         </div>
       </div>
       <div class="form-group">
-        <label>Posición Vertical</label>
+        <label>Posición Y</label>
         <div class="range-control">
           <input type="range" id="photoPosY" min="-100" max="100" value="0" oninput="updatePhotoTransform()">
           <span id="lblPhotoY">0px</span>
@@ -497,41 +599,28 @@
       <textarea id="inTitle" rows="2" oninput="renderPoster()">Cómo Exponer Con Seguridad</textarea>
     </div>
 
-    <div class="section-title">Instructor, Cédulas & Credenciales</div>
+    <div class="form-group">
+      <label>Formato de Letra del Título</label>
+      <select id="inTitleCase" onchange="renderPoster()">
+        <option value="capitalize">Tipo Título (Primera Letra Mayúscula)</option>
+        <option value="none">Texto Original (tal como lo escribes)</option>
+        <option value="lowercase">minúsculas (todo en minúscula)</option>
+        <option value="uppercase">MAYÚSCULAS (TODO EN MAYÚSCULAS)</option>
+      </select>
+    </div>
+
+    <div class="section-title">Instructor & Trayectoria Dinámica</div>
 
     <div class="form-group">
       <label>Nombre y Grado</label>
       <input type="text" id="inName" value="Mtro. Rafael Garza Hinojosa" oninput="renderPoster()">
     </div>
 
+    <!-- Contenedor Dinámico de Renglones de Credenciales -->
     <div class="form-group">
-      <label>Cédula Profesional / Registro</label>
-      <input type="text" id="inCedula" value="Cédula Profesional: [Número de Registro]" oninput="renderPoster()">
-    </div>
-
-    <div class="form-group">
-      <label>Línea 1 (Especialidad Principal)</label>
-      <input type="text" id="inBio1" value="Experto en Productividad Académica" oninput="renderPoster()">
-    </div>
-
-    <div class="form-group">
-      <label>Línea 2 (Maestría / Posgrado)</label>
-      <input type="text" id="inBio2" value="Maestría en Planeación Estratégica" oninput="renderPoster()">
-    </div>
-
-    <div class="form-group">
-      <label>Línea 3 (Segunda Maestría / Área)</label>
-      <input type="text" id="inBio3" value="Maestría en Sustentabilidad y Recursos Renovables" oninput="renderPoster()">
-    </div>
-
-    <div class="form-group">
-      <label>Línea 4 (Certificaciones CONOCER / EC)</label>
-      <input type="text" id="inBio4" value="Certificación CONOCER: EC0104 · EC0366 · EC1223" oninput="renderPoster()">
-    </div>
-
-    <div class="form-group">
-      <label>Línea 5 (Desarrollo Profesional Adicional)</label>
-      <input type="text" id="inBio5" value="Desarrollo de Cursos en Línea y Consultoría" oninput="renderPoster()">
+      <label>Credenciales, Cédulas y Especialidades</label>
+      <div id="dynamicLinesContainer" style="display:flex; flex-direction:column; gap:8px;"></div>
+      <button type="button" class="btn-add-line" onclick="addCredentialLine()">➕ Agregar Renglón</button>
     </div>
 
     <div class="section-title">Fecha, Horario & Promoción</div>
@@ -548,11 +637,11 @@
     </div>
 
     <div class="form-group">
-      <label>Etiqueta / Badge Promocional</label>
+      <label>Etiqueta Promocional</label>
       <input type="text" id="inBadge" value="✅ Evento 100% Gratuito · ¡Inscríbete y participa!" oninput="renderPoster()">
     </div>
 
-    <div class="section-title">Contacto & Membrete Inferior</div>
+    <div class="section-title">Contacto & Registro</div>
 
     <div class="form-group">
       <label>Correo Electrónico</label>
@@ -584,13 +673,15 @@
   <main class="preview-area">
     <div class="poster-canvas" id="posterArea">
       
-      <!-- 1. Encabezado / Membrete Superior -->
+      <!-- 1. Encabezado -->
       <div class="poster-header">
         <div class="poster-brand-wrap">
-          <img id="outLogoImg" class="poster-logo-img" style="display:none;" alt="Logo">
+          <div class="poster-logo-frame logo-shape-circle" id="outLogoFrame">
+            <img id="outLogoImg" class="poster-logo-img" alt="Logo">
+          </div>
           <div class="poster-brand-name" id="outBrand">CAPACITIUMX</div>
         </div>
-        <div class="poster-slogan" id="outSlogan">Centro de Capacitación y Asesoría</div>
+        <div class="poster-slogan" id="outSlogan">Capacitación y Asesoría Académica</div>
       </div>
 
       <!-- 2. Hero Principal y Fotografía -->
@@ -600,13 +691,12 @@
           <h1 class="poster-title" id="outTitle">Cómo Exponer Con Seguridad</h1>
         </div>
 
-        <!-- Marco de Foto -->
         <div class="poster-photo-frame">
           <img id="outPhotoImg" class="poster-photo-img" src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=600&q=80" alt="Instructor">
         </div>
       </div>
 
-      <!-- 3. Sección Central: Sesión + Múltiples Credenciales -->
+      <!-- 3. Sección Central: Sesión + Credenciales Dinámicas -->
       <div class="poster-middle">
         <div class="poster-session-box">
           <div class="session-title" id="outSessionHeader">📅 Próxima Sesión:</div>
@@ -616,18 +706,13 @@
 
         <div class="poster-bio-box">
           <div class="bio-name" id="outName">Mtro. Rafael Garza Hinojosa</div>
-          <div class="bio-credentials">
-            <span class="bio-cedula" id="outCedula">Cédula Profesional: [Número de Registro]</span>
-            <span id="outBio1">Experto en Productividad Académica</span>
-            <span id="outBio2">Maestría en Planeación Estratégica</span>
-            <span id="outBio3">Maestría en Sustentabilidad y Recursos Renovables</span>
-            <span id="outBio4">Certificación CONOCER: EC0104 · EC0366 · EC1223</span>
-            <span id="outBio5">Desarrollo de Cursos en Línea y Consultoría</span>
+          <div class="bio-credentials" id="outCredentialsContainer">
+            <!-- Renglones generados dinámicamente -->
           </div>
         </div>
       </div>
 
-      <!-- 4. Pie de Página / Contacto y Membrete Final -->
+      <!-- 4. Pie de Página / Contacto -->
       <div class="poster-footer">
         <div class="contact-heading">
           <span>✉️</span> Inscripciones:
@@ -732,21 +817,80 @@
       applyStyleObj(STYLES_DB[r]);
     }
 
-    // Renderizar Textos
+    // MANEJO DE RENGLONES DINÁMICOS DE TRAYECTORIA / CREDENCIALES
+    let credentialLines = [
+      "Cédula Profesional: [Número de Registro]",
+      "Experto en Productividad Académica",
+      "Maestría en Planeación Estratégica",
+      "Maestría en Sustentabilidad y Recursos Renovables",
+      "Certificación CONOCER: EC0104 · EC0366 · EC1223"
+    ];
+
+    function renderCredentialInputs() {
+      const container = document.getElementById('dynamicLinesContainer');
+      container.innerHTML = '';
+      
+      credentialLines.forEach((text, index) => {
+        const row = document.createElement('div');
+        row.className = 'dynamic-line-row';
+        row.innerHTML = `
+          <input type="text" value="${text.replace(/"/g, '&quot;')}" oninput="updateCredentialLine(${index}, this.value)">
+          <button type="button" class="btn-delete-row" onclick="removeCredentialLine(${index})" title="Eliminar renglón">✕</button>
+        `;
+        container.appendChild(row);
+      });
+
+      renderCredentialsPreview();
+    }
+
+    function addCredentialLine() {
+      credentialLines.push("Nueva Certificación / Especialidad");
+      renderCredentialInputs();
+    }
+
+    function removeCredentialLine(index) {
+      credentialLines.splice(index, 1);
+      renderCredentialInputs();
+    }
+
+    function updateCredentialLine(index, value) {
+      credentialLines[index] = value;
+      renderCredentialsPreview();
+    }
+
+    function renderCredentialsPreview() {
+      const container = document.getElementById('outCredentialsContainer');
+      container.innerHTML = '';
+      credentialLines.forEach(line => {
+        if (line.trim() !== '') {
+          const span = document.createElement('span');
+          span.innerText = line;
+          container.appendChild(span);
+        }
+      });
+    }
+
+    // RENDERIZADO GENERAL Y CONTROL DE MAYÚSCULAS/MINÚSCULAS
     function renderPoster() {
       document.getElementById('outBrand').innerText = document.getElementById('inBrand').value;
-      document.getElementById('outSlogan').innerText = document.getElementById('inSlogan').value;
+      
+      // Control de texto del Eslogan
+      const sloganVal = document.getElementById('inSlogan').value;
+      const sloganCase = document.getElementById('inSloganCase').value;
+      const outSlogan = document.getElementById('outSlogan');
+      outSlogan.innerText = sloganVal;
+      outSlogan.style.textTransform = sloganCase;
+
       document.getElementById('outPlatform').innerText = document.getElementById('inPlatform').value;
-      document.getElementById('outTitle').innerText = document.getElementById('inTitle').value;
+      
+      // Control de texto del Título
+      const titleVal = document.getElementById('inTitle').value;
+      const titleCase = document.getElementById('inTitleCase').value;
+      const outTitle = document.getElementById('outTitle');
+      outTitle.innerText = titleVal;
+      outTitle.style.textTransform = titleCase;
       
       document.getElementById('outName').innerText = document.getElementById('inName').value;
-      document.getElementById('outCedula').innerText = document.getElementById('inCedula').value;
-      document.getElementById('outBio1').innerText = document.getElementById('inBio1').value;
-      document.getElementById('outBio2').innerText = document.getElementById('inBio2').value;
-      document.getElementById('outBio3').innerText = document.getElementById('inBio3').value;
-      document.getElementById('outBio4').innerText = document.getElementById('inBio4').value;
-      document.getElementById('outBio5').innerText = document.getElementById('inBio5').value;
-
       document.getElementById('outSessionHeader').innerText = document.getElementById('inSessionHeader').value;
       document.getElementById('outDateTime').innerHTML = document.getElementById('inDateTime').value.replace(/\n/g, '<br>');
       document.getElementById('outBadge').innerText = document.getElementById('inBadge').value;
@@ -779,17 +923,32 @@
       document.getElementById('outPhotoImg').style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
     }
 
+    // Logo & Forma
     function loadLogo(event) {
       const img = document.getElementById('outLogoImg');
+      const frame = document.getElementById('outLogoFrame');
       const file = event.target.files[0];
       if (file) {
         const reader = new FileReader();
         reader.onload = e => {
           img.src = e.target.result;
-          img.style.display = 'block';
+          frame.style.display = 'flex';
+          updateLogoAppearance();
         };
         reader.readAsDataURL(file);
       }
+    }
+
+    function updateLogoAppearance() {
+      const shape = document.getElementById('logoShape').value;
+      const size = document.getElementById('logoSize').value;
+      const frame = document.getElementById('outLogoFrame');
+
+      document.getElementById('lblLogoSize').innerText = size + 'px';
+      frame.className = 'poster-logo-frame ' + shape;
+      frame.style.width = size + 'px';
+      frame.style.height = size + 'px';
+      frame.style.minWidth = size + 'px';
     }
 
     // Descarga PNG
@@ -803,20 +962,17 @@
       });
     }
 
-    // Guardado
+    // Persistencia Local
     function savePosterData() {
       const data = {
         brand: document.getElementById('inBrand').value,
         slogan: document.getElementById('inSlogan').value,
+        sloganCase: document.getElementById('inSloganCase').value,
         platform: document.getElementById('inPlatform').value,
         title: document.getElementById('inTitle').value,
+        titleCase: document.getElementById('inTitleCase').value,
         name: document.getElementById('inName').value,
-        cedula: document.getElementById('inCedula').value,
-        bio1: document.getElementById('inBio1').value,
-        bio2: document.getElementById('inBio2').value,
-        bio3: document.getElementById('inBio3').value,
-        bio4: document.getElementById('inBio4').value,
-        bio5: document.getElementById('inBio5').value,
+        credentials: credentialLines,
         sessionHeader: document.getElementById('inSessionHeader').value,
         dateTime: document.getElementById('inDateTime').value,
         badge: document.getElementById('inBadge').value,
@@ -826,28 +982,31 @@
         themeIndex: document.getElementById('themeSelector').value,
         photoScale: document.getElementById('photoScale').value,
         photoX: document.getElementById('photoPosX').value,
-        photoY: document.getElementById('photoPosY').value
+        photoY: document.getElementById('photoPosY').value,
+        logoShape: document.getElementById('logoShape').value,
+        logoSize: document.getElementById('logoSize').value
       };
-      localStorage.setItem('capacitiumx_poster_v2', JSON.stringify(data));
+      localStorage.setItem('capacitiumx_poster_v4', JSON.stringify(data));
       alert('¡Póster guardado en memoria local!');
     }
 
     function loadPosterData() {
-      const saved = localStorage.getItem('capacitiumx_poster_v2');
+      const saved = localStorage.getItem('capacitiumx_poster_v4');
       if (!saved) return alert('No hay datos guardados.');
       const data = JSON.parse(saved);
       
       document.getElementById('inBrand').value = data.brand || '';
       document.getElementById('inSlogan').value = data.slogan || '';
+      document.getElementById('inSloganCase').value = data.sloganCase || 'none';
       document.getElementById('inPlatform').value = data.platform || '';
       document.getElementById('inTitle').value = data.title || '';
+      document.getElementById('inTitleCase').value = data.titleCase || 'capitalize';
       document.getElementById('inName').value = data.name || '';
-      document.getElementById('inCedula').value = data.cedula || '';
-      document.getElementById('inBio1').value = data.bio1 || '';
-      document.getElementById('inBio2').value = data.bio2 || '';
-      document.getElementById('inBio3').value = data.bio3 || '';
-      document.getElementById('inBio4').value = data.bio4 || '';
-      document.getElementById('inBio5').value = data.bio5 || '';
+      
+      if (data.credentials && Array.isArray(data.credentials)) {
+        credentialLines = data.credentials;
+      }
+
       document.getElementById('inSessionHeader').value = data.sessionHeader || '';
       document.getElementById('inDateTime').value = data.dateTime || '';
       document.getElementById('inBadge').value = data.badge || '';
@@ -859,26 +1018,32 @@
       if (data.photoScale) document.getElementById('photoScale').value = data.photoScale;
       if (data.photoX) document.getElementById('photoPosX').value = data.photoX;
       if (data.photoY) document.getElementById('photoPosY').value = data.photoY;
+      if (data.logoShape) document.getElementById('logoShape').value = data.logoShape;
+      if (data.logoSize) document.getElementById('logoSize').value = data.logoSize;
 
       applySelectedStyle();
+      renderCredentialInputs();
       renderPoster();
       updatePhotoTransform();
+      updateLogoAppearance();
       alert('¡Póster restaurado con éxito!');
     }
 
     function exportJSON() {
-      const data = localStorage.getItem('capacitiumx_poster_v2');
+      const data = localStorage.getItem('capacitiumx_poster_v4');
       if (!data) return savePosterData();
       const blob = new Blob([data], { type: 'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = 'poster_config_v2.json';
+      a.download = 'poster_config_v4.json';
       a.click();
     }
 
-    // Inicio
+    // Inicialización
     applyStyleObj(STYLES_DB[0]);
+    renderCredentialInputs();
     updatePhotoTransform();
+    updateLogoAppearance();
   </script>
 </body>
 </html>
