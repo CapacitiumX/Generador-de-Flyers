@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generador de Pósters Publicitarios - CAPACITIUMX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@300;400;600;700;900&family=Montserrat:wght@400;600;700;800;900&family=Oswald:wght@500;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <!-- html2canvas para exportación limpia a imagen PNG -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  
+  <style>
+    :root {
+      --primary-ui: #0f172a;
+      --accent-ui: #2563eb;
+      --bg-panel: #ffffff;
+      
+      /* Variables dinámicas del póster */
+      --poster-bg: #e0f2fe;
+      --poster-card-bg: #ffffff;
+      --poster-text-main: #0f172a;
+      --poster-text-muted: #334155;
+      --poster-hero-bg: linear-gradient(135deg, #0284c7 0%, #1e40af 100%);
+      --poster-hero-text: #ffffff;
+      --poster-accent: #2563eb;
+      --poster-badge-bg: #22c55e;
+      --poster-badge-text: #ffffff;
+      --poster-font-title: 'Montserrat', sans-serif;
+      --poster-font-body: 'Plus Jakarta Sans', sans-serif;
+      --poster-photo-border: 6px solid #38bdf8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #090d16;
+      color: #334155;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Barra lateral de configuración */
+    .sidebar {
+      width: 480px;
+      background: var(--bg-panel);
+      border-right: 1px solid #e2e8f0;
+      padding: 22px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 4px 0 25px rgba(0,0,0,0.3);
+      z-index: 10;
+    }
+
+    .sidebar h2 {
+      font-size: 1.2rem;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title {
+      font-size: 0.74rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #64748b;
+      margin-top: 6px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #475569;
+    }
+
+    .form-group input, 
+    .form-group textarea, 
+    .form-group select {
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      outline: none;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .form-group input:focus, 
+    .form-group textarea:focus, 
+    .form-group select:focus {
+      border-color: var(--accent-ui);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .range-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .range-control input[type="range"] { flex: 1; cursor: pointer; }
+    .range-control span { font-size: 0.75rem; font-weight: 700; color: #64748b; width: 45px; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-action {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.8rem;
+      flex: 1;
+      text-align: center;
+    }
+    .btn-action.save { background: #059669; }
+    .btn-action.load { background: #4f46e5; }
+    .btn-action.random { background: #d97706; }
+
+    .btn-download {
+      background: #2563eb;
+      color: white;
+      padding: 13px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 800;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: background 0.2s;
+      margin-top: 6px;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+    }
+    .btn-download:hover { background: #1d4ed8; }
+
+    /* Área de Trabajo / Preview */
+    .preview-area {
+      flex: 1;
+      padding: 24px;
+      overflow: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0f172a;
+    }
+
+    /* Lienzo del Póster (Formato 1:1 Cuadrado de 900x900px) */
+    .poster-canvas {
+      width: 860px;
+      height: 860px;
+      background: var(--poster-bg);
+      box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      box-sizing: border-box;
+      overflow: hidden;
+      font-family: var(--poster-font-body);
+      color: var(--poster-text-main);
+    }
+
+    /* 1. Header */
+    .poster-header {
+      padding: 24px 36px 14px 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 2;
+    }
+    .poster-brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .poster-logo-img {
+      max-height: 48px;
+      max-width: 140px;
+      object-fit: contain;
+    }
+    .poster-brand-name {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 900;
+      font-size: 2.2rem;
+      letter-spacing: 2px;
+      color: var(--poster-text-main);
+      text-transform: uppercase;
+    }
+
+    /* 2. Sección Principal / Hero & Foto */
+    .poster-hero {
+      position: relative;
+      background: var(--poster-hero-bg);
+      color: var(--poster-hero-text);
+      padding: 34px 36px;
+      min-height: 250px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 2;
+      clip-path: polygon(0 0, 100% 0, 100% 88%, 0 100%);
+    }
+    .poster-title-area {
+      max-width: 58%;
+    }
+    .poster-title {
+      font-family: var(--poster-font-title);
+      font-weight: 900;
+      font-size: 3rem;
+      line-height: 1.05;
+      text-transform: capitalize;
+      letter-spacing: -0.5px;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    }
+    .poster-platform-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.95);
+      color: #0284c7;
+      padding: 6px 16px;
+      border-radius: 30px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+
+    /* Foto de Perfil */
+    .poster-photo-frame {
+      position: absolute;
+      right: 40px;
+      top: 15px;
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      border: var(--poster-photo-border);
+      overflow: hidden;
+      background: #cbd5e1;
+      box-shadow: 0 14px 28px rgba(0,0,0,0.3);
+      z-index: 3;
+    }
+    .poster-photo-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform-origin: center center;
+    }
+
+    /* 3. Sección Central / Bio y Detalles */
+    .poster-middle {
+      display: grid;
+      grid-template-columns: 1fr 1.05fr;
+      padding: 20px 36px 10px 36px;
+      gap: 20px;
+      z-index: 2;
+      flex: 1;
+    }
+
+    /* Tarjeta de Sesión / Fecha */
+    .poster-session-box {
+      background: var(--poster-card-bg);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border-left: 6px solid var(--poster-accent);
+    }
+    .session-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--poster-text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .session-datetime {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--poster-accent);
+      line-height: 1.25;
+      margin: 8px 0;
+    }
+    .session-badge {
+      background: var(--poster-badge-bg);
+      color: var(--poster-badge-text);
+      font-weight: 800;
+      font-size: 0.88rem;
+      padding: 8px 14px;
+      border-radius: 8px;
+      display: inline-block;
+      text-align: center;
+    }
+
+    /* Bio / Instructor */
+    .poster-bio-box {
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-left: 10px;
+    }
+    .bio-name {
+      font-family: var(--poster-font-title);
+      font-size: 1.65rem;
+      font-weight: 900;
+      color: var(--poster-text-main);
+      line-height: 1.15;
+      margin-bottom: 6px;
+    }
+    .bio-credentials {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--poster-text-muted);
+    }
+    .bio-credentials span {
+      display: block;
+    }
+
+    /* 4. Pie / Inscripciones y Contacto */
+    .poster-footer {
+      background: var(--poster-card-bg);
+      padding: 20px 36px;
+      margin: 10px 36px 26px 36px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.07);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 2;
+    }
+    .contact-heading {
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: var(--poster-text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .contact-details {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--poster-text-muted);
+      line-height: 1.35;
+    }
+    .contact-details span {
+      display: block;
+    }
+    .contact-details strong {
+      color: var(--poster-text-main);
+    }
+
+    .footer-watermark {
+      position: absolute;
+      bottom: 6px;
+      right: 36px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--poster-text-muted);
+      opacity: 0.5;
+      letter-spacing: 1px;
+    }
+
+    @media print {
+      body { background: transparent; height: auto; overflow: visible; }
+      .sidebar { display: none !important; }
+      .preview-area { padding: 0; background: transparent; }
+      .poster-canvas {
+        box-shadow: none !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        margin: 0 !important;
+      }
+      @page { size: auto; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Panel Lateral de Ajustes -->
+  <aside class="sidebar">
+    <h2>🎨 Generador de Póster</h2>
+
+    <div class="section-title">Plantillas Visuales (200 Variaciones)</div>
+    
+    <div class="form-group">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+        <label>Seleccionar Machote</label>
+        <button type="button" class="btn-action random" onclick="randomStyle()">🎲 Aleatorio</button>
+      </div>
+      <select id="themeSelector" onchange="applySelectedStyle()"></select>
+    </div>
+
+    <div class="section-title">Memoria & Archivo</div>
+    <div class="btn-group">
+      <button class="btn-action save" onclick="savePosterData()">💾 Guardar</button>
+      <button class="btn-action load" onclick="loadPosterData()">📂 Cargar</button>
+      <button class="btn-action" onclick="exportJSON()">⬇️ JSON</button>
+    </div>
+
+    <div class="section-title">Foto de Perfil / Instructor</div>
+    
+    <div class="form-group">
+      <label>Subir Fotografía</label>
+      <input type="file" accept="image/*" onchange="loadPhoto(event)">
+    </div>
+
+    <div class="form-group">
+      <label>Zoom / Escala</label>
+      <div class="range-control">
+        <input type="range" id="photoScale" min="0.8" max="2.5" step="0.05" value="1" oninput="updatePhotoTransform()">
+        <span id="lblPhotoScale">1.0x</span>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Posición X</label>
+        <div class="range-control">
+          <input type="range" id="photoPosX" min="-100" max="100" value="0" oninput="updatePhotoTransform()">
+          <span id="lblPhotoX">0px</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Posición Y</label>
+        <div class="range-control">
+          <input type="range" id="photoPosY" min="-100" max="100" value="0" oninput="updatePhotoTransform()">
+          <span id="lblPhotoY">0px</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Textos Principales & Título</div>
+
+    <div class="form-group">
+      <label>Nombre de la Empresa</label>
+      <input type="text" id="inBrand" value="CAPACITIUMX" oninput="renderPoster()">
+    </div>
+
+    <div class="form-group">
+      <label>Subir Logo (Opcional)</label>
+      <input type="file" accept="image/*" onchange="loadLogo(event)">
+    </div>
+
+    <div class="form-group">
+      <label>Plataforma / Formato</label>
+      <input type="text" id="inPlatform" value="🎥 Sesión en Vivo por Zoom" oninput="renderPoster()">
+    </div>
+
+    <div class="form-group">
+      <label>Título del Taller / Asesoría</label>
+      <textarea id="inTitle" rows="2" oninput="renderPoster()">Cómo Exponer Con Seguridad</textarea>
+    </div>
+
+    <div class="section-title">Instructor & Credenciales</div>
+
+    <div class="form-group">
+      <label>Nombre y Grado</label>
+      <input type="text" id="inName" value="Mtro. Rafael Garza Hinojosa" oninput="renderPoster()">
+    </div>
+
+    <div class="form-group">
+      <label>Especialidad / Trayectoria (Línea 1)</label>
+      <input type="text" id="inBio1" value="Experto en Productividad Académica" oninput="renderPoster()">
+    </div>
+
+    <div class="form-group">
+      <label>Grado / Maestría (Línea 2)</label>
+      <input type="text" id="inBio2" value="Maestría en Administración Estratégica" oninput="renderPoster()">
+    </div>
+
+    <div class="form-group">
+      <label>Certificación / Área (Línea 3)</label>
+      <input type="text" id="inBio3" value="Desarrollo de Cursos en Línea" oninput="renderPoster()">
+    </div>
+
+    <div class="section-title">Fecha, Horario & Modalidad</div>
+
+    <div class="form-group">
+      <label>Encabezado de Sesión</label>
+      <input type="text" id="inSessionHeader" value="📅 Próxima Sesión:" oninput="renderPoster()">
+    </div>
+
+    <div class="form-group">
+      <label>Fecha y Hora</label>
+      <textarea id="inDateTime" rows="2" oninput="renderPoster()">Este martes 1 de septiembre
+7:00 a 8:00 PM (Hora de México)</textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Texto de Promoción / Etiqueta</label>
+      <input type="text" id="inBadge" value="✅ Evento 100% Gratuito · ¡Inscríbete y participa!" oninput="renderPoster()">
+    </div>
+
+    <div class="section-title">Contacto & Registro</div>
+
+    <div class="form-group">
+      <label>Correo Electrónico</label>
+      <input type="text" id="inEmail" value="contacto@capacitiumx.com" oninput="renderPoster()">
+    </div>
+
+    <div class="form-group">
+      <label>WhatsApp / Teléfono</label>
+      <input type="text" id="inPhone" value="8131103846" oninput="renderPoster()">
+    </div>
+
+    <div class="form-group">
+      <label>Modalidad de Acceso</label>
+      <input type="text" id="inAccess" value="Sesión virtual por Zoom" oninput="renderPoster()">
+    </div>
+
+    <button class="btn-download" onclick="downloadPosterImage()">📥 Descargar Imagen PNG (HD)</button>
+    <button class="btn-action" style="background:#475569; margin-top:4px;" onclick="window.print()">🖨️ Imprimir / PDF</button>
+  </aside>
+
+  <!-- Área de Previsualización -->
+  <main class="preview-area">
+    <div class="poster-canvas" id="posterArea">
+      
+      <!-- 1. Encabezado -->
+      <div class="poster-header">
+        <div class="poster-brand-wrap">
+          <img id="outLogoImg" class="poster-logo-img" style="display:none;" alt="Logo">
+          <div class="poster-brand-name" id="outBrand">CAPACITIUMX</div>
+        </div>
+      </div>
+
+      <!-- 2. Hero Principal y Foto -->
+      <div class="poster-hero">
+        <div class="poster-title-area">
+          <div class="poster-platform-badge" id="outPlatform">🎥 Sesión en Vivo por Zoom</div>
+          <h1 class="poster-title" id="outTitle">Cómo Exponer Con Seguridad</h1>
+        </div>
+
+        <!-- Marco de Fotografía -->
+        <div class="poster-photo-frame">
+          <img id="outPhotoImg" class="poster-photo-img" src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=600&q=80" alt="Instructor">
+        </div>
+      </div>
+
+      <!-- 3. Zona Central: Sesión + Bio -->
+      <div class="poster-middle">
+        <div class="poster-session-box">
+          <div class="session-title" id="outSessionHeader">📅 Próxima Sesión:</div>
+          <div class="session-datetime" id="outDateTime">Este martes 1 de septiembre<br>7:00 a 8:00 PM (Hora de México)</div>
+          <div class="session-badge" id="outBadge">✅ Evento 100% Gratuito · ¡Inscríbete y participa!</div>
+        </div>
+
+        <div class="poster-bio-box">
+          <div class="bio-name" id="outName">Mtro. Rafael Garza Hinojosa</div>
+          <div class="bio-credentials">
+            <span id="outBio1">Experto en Productividad Académica</span>
+            <span id="outBio2">Maestría en Administración Estratégica</span>
+            <span id="outBio3">Desarrollo de Cursos en Línea</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Pie de Página: Datos de Contacto -->
+      <div class="poster-footer">
+        <div class="contact-heading">
+          <span>✉️</span> Inscripciones:
+        </div>
+        <div class="contact-details">
+          <span><strong>Correo:</strong> <span id="outEmail">contacto@capacitiumx.com</span></span>
+          <span><strong>WhatsApp:</strong> <span id="outPhone">8131103846</span></span>
+          <span><strong>Plataforma:</strong> <span id="outAccess">Sesión virtual por Zoom</span></span>
+        </div>
+      </div>
+
+      <div class="footer-watermark">CAPACITIUMX · CAPACITACIÓN & ASESORÍA</div>
+    </div>
+  </main>
+
+  <script>
+    // GENERADOR DE 200 PALETAS Y ESTILOS PARA PÓSTER
+    const palettes = [
+      { name: "Azul Ejecutivo & Cielo (Original)", bg: "#e0f2fe", cardBg: "#ffffff", textMain: "#0f172a", textMuted: "#334155", heroBg: "linear-gradient(135deg, #0284c7 0%, #1e40af 100%)", heroText: "#ffffff", accent: "#0284c7", badgeBg: "#16a34a", border: "6px solid #38bdf8" },
+      { name: "Dark Navy & Oro Pulido", bg: "#0b1329", cardBg: "#172554", textMain: "#f8fafc", textMuted: "#cbd5e1", heroBg: "linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%)", heroText: "#fbbf24", accent: "#fbbf24", badgeBg: "#d97706", border: "6px solid #fbbf24" },
+      { name: "Negro Obsidiana & Fuego", bg: "#09090b", cardBg: "#18181b", textMain: "#ffffff", textMuted: "#a1a1aa", heroBg: "linear-gradient(135deg, #dc2626 0%, #7f1d1d 100%)", heroText: "#ffffff", accent: "#ef4444", badgeBg: "#b91c1c", border: "6px solid #ef4444" },
+      { name: "Verde Esmeralda Corporativo", bg: "#ecfdf5", cardBg: "#ffffff", textMain: "#064e3b", textMuted: "#047857", heroBg: "linear-gradient(135deg, #059669 0%, #064e3b 100%)", heroText: "#ffffff", accent: "#059669", badgeBg: "#047857", border: "6px solid #34d399" },
+      { name: "Púrpura & Violeta Tech", bg: "#faf5ff", cardBg: "#ffffff", textMain: "#3b0764", textMuted: "#6b21a8", heroBg: "linear-gradient(135deg, #9333ea 0%, #4c1d95 100%)", heroText: "#ffffff", accent: "#7e22ce", badgeBg: "#6b21a8", border: "6px solid #c084fc" },
+      { name: "Gris Titanio & Cobalto", bg: "#f1f5f9", cardBg: "#ffffff", textMain: "#0f172a", textMuted: "#475569", heroBg: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)", heroText: "#38bdf8", accent: "#2563eb", badgeBg: "#0ea5e9", border: "6px solid #60a5fa" },
+      { name: "Cyberpunk Cyan & Dark", bg: "#030712", cardBg: "#0f172a", textMain: "#f0fdfa", textMuted: "#94a3b8", heroBg: "linear-gradient(135deg, #0891b2 0%, #0e7490 100%)", heroText: "#ffffff", accent: "#06b6d4", badgeBg: "#0284c7", border: "6px solid #22d3ee" },
+      { name: "Borgoña & Oro Rosa", bg: "#fff1f2", cardBg: "#ffffff", textMain: "#4c0519", textMuted: "#881337", heroBg: "linear-gradient(135deg, #be123c 0%, #4c0519 100%)", heroText: "#ffffff", accent: "#e11d48", badgeBg: "#9f1239", border: "6px solid #fda4af" },
+      { name: "Cobre & Ámbar Cálido", bg: "#fffbeb", cardBg: "#ffffff", textMain: "#78350f", textMuted: "#92400e", heroBg: "linear-gradient(135deg, #d97706 0%, #78350f 100%)", heroText: "#ffffff", accent: "#d97706", badgeBg: "#b45309", border: "6px solid #fcd34d" },
+      { name: "Azul Royal & Blanco Minimal", bg: "#f8fafc", cardBg: "#ffffff", textMain: "#1e3a8a", textMuted: "#1e293b", heroBg: "linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%)", heroText: "#ffffff", accent: "#2563eb", badgeBg: "#15803d", border: "6px solid #93c5fd" },
+      { name: "Bosque Profundo & Menta", bg: "#052e16", cardBg: "#14532d", textMain: "#f0fdf4", textMuted: "#86efac", heroBg: "linear-gradient(135deg, #15803d 0%, #052e16 100%)", heroText: "#bbf7d0", accent: "#4ade80", badgeBg: "#16a34a", border: "6px solid #4ade80" },
+      { name: "Carbón & Naranja Dinámico", bg: "#18181b", cardBg: "#27272a", textMain: "#ffffff", textMuted: "#d4d4d8", heroBg: "linear-gradient(135deg, #ea580c 0%, #9a3412 100%)", heroText: "#ffffff", accent: "#f97316", badgeBg: "#c2410c", border: "6px solid #fb923c" },
+      { name: "Magenta Eléctrico", bg: "#fdf2f8", cardBg: "#ffffff", textMain: "#701a75", textMuted: "#86198f", heroBg: "linear-gradient(135deg, #c026d3 0%, #701a75 100%)", heroText: "#ffffff", accent: "#db2777", badgeBg: "#a21caf", border: "6px solid #f472b6" },
+      { name: "Pergamino Académico & Café", bg: "#fefce8", cardBg: "#ffffff", textMain: "#451a03", textMuted: "#78350f", heroBg: "linear-gradient(135deg, #854d0e 0%, #451a03 100%)", heroText: "#fef08a", accent: "#b45309", badgeBg: "#713f12", border: "6px solid #ca8a04" },
+      { name: "Gris Grafito & Lima", bg: "#0f172a", cardBg: "#1e293b", textMain: "#f8fafc", textMuted: "#94a3b8", heroBg: "linear-gradient(135deg, #4d7c0f 0%, #1e293b 100%)", heroText: "#ecfccb", accent: "#84cc16", badgeBg: "#65a30d", border: "6px solid #bef264" },
+      { name: "Vino Tinto & Platino", bg: "#1f1315", cardBg: "#2d1b1f", textMain: "#fce7f3", textMuted: "#fbcfe8", heroBg: "linear-gradient(135deg, #831843 0%, #500724 100%)", heroText: "#ffffff", accent: "#db2777", badgeBg: "#9d174d", border: "6px solid #f472b6" },
+      { name: "Azul Índigo & Coral", bg: "#eef2ff", cardBg: "#ffffff", textMain: "#1e1b4b", textMuted: "#312e81", heroBg: "linear-gradient(135deg, #4338ca 0%, #1e1b4b 100%)", heroText: "#ffffff", accent: "#f43f5e", badgeBg: "#e11d48", border: "6px solid #818cf8" },
+      { name: "Dorado Satinado & Negro", bg: "#000000", cardBg: "#171717", textMain: "#fef08a", textMuted: "#eab308", heroBg: "linear-gradient(135deg, #a16207 0%, #422006 100%)", heroText: "#fef9c3", accent: "#eab308", badgeBg: "#ca8a04", border: "6px solid #facc15" },
+      { name: "Turquesa Marina & Blanco", bg: "#f0fdfa", cardBg: "#ffffff", textMain: "#134e4a", textMuted: "#115e59", heroBg: "linear-gradient(135deg, #0d9488 0%, #134e4a 100%)", heroText: "#ffffff", accent: "#0f766e", badgeBg: "#115e59", border: "6px solid #5eead4" },
+      { name: "Monocromático Estricto", bg: "#ffffff", cardBg: "#f4f4f5", textMain: "#000000", textMuted: "#27272a", heroBg: "linear-gradient(135deg, #18181b 0%, #000000 100%)", heroText: "#ffffff", accent: "#000000", badgeBg: "#27272a", border: "6px solid #000000" }
+    ];
+
+    const fontStyles = [
+      { title: "'Montserrat', sans-serif", body: "'Plus Jakarta Sans', sans-serif" },
+      { title: "'Oswald', sans-serif", body: "'Inter', sans-serif" },
+      { title: "'Cinzel', serif", body: "'Plus Jakarta Sans', sans-serif" },
+      { title: "'Inter', sans-serif", body: "'Montserrat', sans-serif" },
+      { title: "'Plus Jakarta Sans', sans-serif", body: "'Inter', sans-serif" },
+      { title: "'Montserrat', sans-serif", body: "'Inter', sans-serif" },
+      { title: "'Oswald', sans-serif", body: "'Plus Jakarta Sans', sans-serif" },
+      { title: "'Cinzel', serif", body: "'Inter', sans-serif" },
+      { title: "'Inter', sans-serif", body: "'Plus Jakarta Sans', sans-serif" },
+      { title: "'Plus Jakarta Sans', sans-serif", body: "'Montserrat', sans-serif" }
+    ];
+
+    const STYLES_DB = [];
+    let count = 1;
+
+    palettes.forEach(pal => {
+      fontStyles.forEach(f => {
+        STYLES_DB.push({
+          id: count,
+          name: `Estilo #${count}: ${pal.name} [${f.title.split(',')[0].replace(/'/g,'')}]`,
+          ...pal,
+          fontTitle: f.title,
+          fontBody: f.body
+        });
+        count++;
+      });
+    });
+
+    // Cargar los 200 machotes en el selector
+    const themeSelect = document.getElementById('themeSelector');
+    STYLES_DB.forEach((st, idx) => {
+      const opt = document.createElement('option');
+      opt.value = idx;
+      opt.textContent = st.name;
+      themeSelect.appendChild(opt);
+    });
+
+    function applyStyleObj(s) {
+      const p = document.getElementById('posterArea');
+      p.style.setProperty('--poster-bg', s.bg);
+      p.style.setProperty('--poster-card-bg', s.cardBg);
+      p.style.setProperty('--poster-text-main', s.textMain);
+      p.style.setProperty('--poster-text-muted', s.textMuted);
+      p.style.setProperty('--poster-hero-bg', s.heroBg);
+      p.style.setProperty('--poster-hero-text', s.heroText);
+      p.style.setProperty('--poster-accent', s.accent);
+      p.style.setProperty('--poster-badge-bg', s.badgeBg);
+      p.style.setProperty('--poster-photo-border', s.border);
+      p.style.setProperty('--poster-font-title', s.fontTitle);
+      p.style.setProperty('--poster-font-body', s.fontBody);
+    }
+
+    function applySelectedStyle() {
+      const idx = document.getElementById('themeSelector').value;
+      applyStyleObj(STYLES_DB[idx]);
+    }
+
+    function randomStyle() {
+      const r = Math.floor(Math.random() * STYLES_DB.length);
+      document.getElementById('themeSelector').value = r;
+      applyStyleObj(STYLES_DB[r]);
+    }
+
+    // Renderizar Textos
+    function renderPoster() {
+      document.getElementById('outBrand').innerText = document.getElementById('inBrand').value;
+      document.getElementById('outPlatform').innerText = document.getElementById('inPlatform').value;
+      document.getElementById('outTitle').innerText = document.getElementById('inTitle').value;
+      document.getElementById('outName').innerText = document.getElementById('inName').value;
+      document.getElementById('outBio1').innerText = document.getElementById('inBio1').value;
+      document.getElementById('outBio2').innerText = document.getElementById('inBio2').value;
+      document.getElementById('outBio3').innerText = document.getElementById('inBio3').value;
+      document.getElementById('outSessionHeader').innerText = document.getElementById('inSessionHeader').value;
+      document.getElementById('outDateTime').innerHTML = document.getElementById('inDateTime').value.replace(/\n/g, '<br>');
+      document.getElementById('outBadge').innerText = document.getElementById('inBadge').value;
+      document.getElementById('outEmail').innerText = document.getElementById('inEmail').value;
+      document.getElementById('outPhone').innerText = document.getElementById('inPhone').value;
+      document.getElementById('outAccess').innerText = document.getElementById('inAccess').value;
+    }
+
+    // Manejo y transformación de Foto de Perfil
+    function loadPhoto(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          document.getElementById('outPhotoImg').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function updatePhotoTransform() {
+      const scale = document.getElementById('photoScale').value;
+      const x = document.getElementById('photoPosX').value;
+      const y = document.getElementById('photoPosY').value;
+
+      document.getElementById('lblPhotoScale').innerText = scale + 'x';
+      document.getElementById('lblPhotoX').innerText = x + 'px';
+      document.getElementById('lblPhotoY').innerText = y + 'px';
+
+      document.getElementById('outPhotoImg').style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+    }
+
+    function loadLogo(event) {
+      const img = document.getElementById('outLogoImg');
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          img.src = e.target.result;
+          img.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Exportación a PNG de alta definición
+    function downloadPosterImage() {
+      const poster = document.getElementById('posterArea');
+      html2canvas(poster, { scale: 2, useCORS: true }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'poster_capacitiumx.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    }
+
+    // Persistencia Local
+    function savePosterData() {
+      const data = {
+        brand: document.getElementById('inBrand').value,
+        platform: document.getElementById('inPlatform').value,
+        title: document.getElementById('inTitle').value,
+        name: document.getElementById('inName').value,
+        bio1: document.getElementById('inBio1').value,
+        bio2: document.getElementById('inBio2').value,
+        bio3: document.getElementById('inBio3').value,
+        sessionHeader: document.getElementById('inSessionHeader').value,
+        dateTime: document.getElementById('inDateTime').value,
+        badge: document.getElementById('inBadge').value,
+        email: document.getElementById('inEmail').value,
+        phone: document.getElementById('inPhone').value,
+        access: document.getElementById('inAccess').value,
+        themeIndex: document.getElementById('themeSelector').value,
+        photoScale: document.getElementById('photoScale').value,
+        photoX: document.getElementById('photoPosX').value,
+        photoY: document.getElementById('photoPosY').value
+      };
+      localStorage.setItem('capacitiumx_poster_data', JSON.stringify(data));
+      alert('¡Póster guardado con éxito!');
+    }
+
+    function loadPosterData() {
+      const saved = localStorage.getItem('capacitiumx_poster_data');
+      if (!saved) return alert('No hay datos guardados.');
+      const data = JSON.parse(saved);
+      
+      document.getElementById('inBrand').value = data.brand;
+      document.getElementById('inPlatform').value = data.platform;
+      document.getElementById('inTitle').value = data.title;
+      document.getElementById('inName').value = data.name;
+      document.getElementById('inBio1').value = data.bio1;
+      document.getElementById('inBio2').value = data.bio2;
+      document.getElementById('inBio3').value = data.bio3;
+      document.getElementById('inSessionHeader').value = data.sessionHeader;
+      document.getElementById('inDateTime').value = data.dateTime;
+      document.getElementById('inBadge').value = data.badge;
+      document.getElementById('inEmail').value = data.email;
+      document.getElementById('inPhone').value = data.phone;
+      document.getElementById('inAccess').value = data.access;
+      
+      document.getElementById('themeSelector').value = data.themeIndex || 0;
+      if (data.photoScale) document.getElementById('photoScale').value = data.photoScale;
+      if (data.photoX) document.getElementById('photoPosX').value = data.photoX;
+      if (data.photoY) document.getElementById('photoPosY').value = data.photoY;
+
+      applySelectedStyle();
+      renderPoster();
+      updatePhotoTransform();
+      alert('¡Póster restaurado con éxito!');
+    }
+
+    function exportJSON() {
+      const data = localStorage.getItem('capacitiumx_poster_data');
+      if (!data) return savePosterData();
+      const blob = new Blob([data], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'poster_config.json';
+      a.click();
+    }
+
+    // Inicialización
+    applyStyleObj(STYLES_DB[0]);
+    updatePhotoTransform();
+  </script>
+</body>
+</html>
